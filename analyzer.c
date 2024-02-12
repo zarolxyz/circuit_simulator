@@ -26,11 +26,9 @@ void delete_analyzer(analyzer_t *analyzer) {
     free(analyzer);
 }
 
-int generate_analyze_equations(double **destination, connection_t **connections, int connections_count, path_t **loops,
-                               int loops_count, int *nodes, int nodes_count) {
+void generate_analyze_equations(double **destination, connection_t **connections, int connections_count, path_t **loops,
+                                int loops_count, int *nodes, int nodes_count) {
     int equations_count = connections_count;
-    if (loops_count + nodes_count != equations_count)
-        return -1;
     int xn_count = equations_count;
     int generated_equations_count = 0;
     for (int i = 0; i < loops_count; i++) {
@@ -72,16 +70,13 @@ int generate_analyze_equations(double **destination, connection_t **connections,
         }
         generated_equations_count++;
     }
-    return 0;
 }
 
-int apply_analyze(analyzer_t *analyzer) {
-    if (generate_analyze_equations(analyzer->equations, analyzer->connections, analyzer->connections_count,
-                                   analyzer->loops,
-                                   analyzer->loops_count, analyzer->nodes, analyzer->nodes_count) != 0)
-        return -1;
-    if (solve_equations(analyzer->equations, analyzer->equations_count) != 0)
-        return -1;
+void apply_analyze(analyzer_t *analyzer) {
+    generate_analyze_equations(analyzer->equations, analyzer->connections, analyzer->connections_count,
+                               analyzer->loops,
+                               analyzer->loops_count, analyzer->nodes, analyzer->nodes_count);
+    solve_equations(analyzer->equations, analyzer->equations_count);
     for (int i = 0; i < analyzer->connections_count; i++) {
         element_t *element = analyzer->connections[i]->element;
         if (element->type == VOLTAGE) {

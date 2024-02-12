@@ -5,6 +5,14 @@
 
 const char *circuit_file = "circuit.txt";
 
+void printf_circuit_state(circuit_t *circuit) {
+    char state_string[64];
+    for (int i = 0; i < circuit->components_count; i++) {
+        generate_component_state_string(state_string, circuit->components[i]);
+        printf("%s\n", state_string);
+    }
+}
+
 int main(int argc, char **argv) {
     if (argc != 3)
         return -1;
@@ -21,22 +29,11 @@ int main(int argc, char **argv) {
     }
     fclose(fp);
     simulator_t *simulator = create_simulator(circuit, unit_time);
-    if (simulate_static(simulator) != 0) {
-        delete_circuit(circuit);
-        delete_simulator(simulator);
-        return -1;
-    }
+    simulate_static(simulator);
     for (int i = 0; i < times; i++) {
-        if (simulate_step(simulator) != 0) {
-            delete_circuit(circuit);
-            delete_simulator(simulator);
-            return -1;
-        }
+        simulate_step(simulator);
     }
-    for (int i = 0; i < circuit->connections_count; i++) {
-        printf("%d voltage: %lf current: %lf\n", i + 1, circuit->connections[i]->element->voltage,
-               circuit->connections[i]->element->current);
-    }
+    printf_circuit_state(circuit);
     delete_circuit(circuit);
     delete_simulator(simulator);
     return 0;

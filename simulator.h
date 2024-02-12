@@ -14,8 +14,8 @@ simulator_t *create_simulator(circuit_t *circuit, double unit_time);
 
 void delete_simulator(simulator_t *simulator);
 
-int simulate_static(simulator_t *simulator);
+void simulate_static(simulator_t *simulator);
 
-int simulate_step(simulator_t *simulator);
+void simulate_step(simulator_t *simulator);
 
 #endif //CIRCUIT_SIMULATOR_SIMULATOR_H

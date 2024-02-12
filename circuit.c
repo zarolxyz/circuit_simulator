@@ -37,17 +37,42 @@ void add_component_to_circuit(circuit_t *circuit, component_t *component) {
     circuit->components_count++;
 }
 
-void add_component_and_connection_by_text_line(circuit_t *circuit, char *text_line) {
-    char type_text[8];
+void add_simple_component_and_connection_by_text_line(circuit_t *circuit, component_type_t type, char *text_line) {
     double value;
     int node_positive;
     int node_negative;
-    sscanf(text_line, "%s %lf %d %d", type_text, &value, &node_negative, &node_positive);
-    component_type_t type = get_component_type_from_character(type_text[0]);
+    sscanf(text_line, "%*s%lf%d%d", &value, &node_negative, &node_positive);
     component_t *component = create_simple_component(type, value);
     connection_t *connection = create_connection(component->element1, node_positive, node_negative);
     add_component_to_circuit(circuit, component);
     add_connection_to_circuit(circuit, connection);
+}
+
+void add_complex_component_and_connection_by_text_line(circuit_t *circuit, component_type_t type, char *text_line) {
+    double value1;
+    double value2;
+    int node_positive1;
+    int node_negative1;
+    int node_positive2;
+    int node_negative2;
+    sscanf(text_line, "%*s%lf%lf%d%d%d%d", &value1, &value2, &node_negative1, &node_positive1, &node_negative2,
+           &node_positive2);
+    component_t *component = create_complex_component(type, value1, value2);
+    connection_t *connection1 = create_connection(component->element1, node_positive1, node_negative1);
+    connection_t *connection2 = create_connection(component->element2, node_positive2, node_negative2);
+    add_component_to_circuit(circuit, component);
+    add_connection_to_circuit(circuit, connection1);
+    add_connection_to_circuit(circuit, connection2);
+}
+
+void add_component_and_connection_by_text_line(circuit_t *circuit, char *text_line) {
+    char type_string[2];
+    sscanf(text_line, "%1s", type_string);
+    component_type_t type = get_component_type_from_character(type_string[0]);
+    if (is_complex_component_type(type))
+        add_complex_component_and_connection_by_text_line(circuit, type, text_line);
+    else
+        add_simple_component_and_connection_by_text_line(circuit, type, text_line);
 }
 
 void init_circuit_elements(circuit_t *circuit) {

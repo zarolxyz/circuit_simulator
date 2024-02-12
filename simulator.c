@@ -15,18 +15,16 @@ void delete_simulator(simulator_t *simulator) {
     free(simulator);
 }
 
-int simulate_static(simulator_t *simulator) {
+void simulate_static(simulator_t *simulator) {
     init_circuit_elements(simulator->circuit);
-    if (apply_analyze(simulator->analyzer) != 0)
-        return -1;
+    apply_analyze(simulator->analyzer);
     update_circuit_elements_static(simulator->circuit);
-    return apply_analyze(simulator->analyzer);
+    apply_analyze(simulator->analyzer);
 }
 
-int simulate_step(simulator_t *simulator) {
+void simulate_step(simulator_t *simulator) {
     update_circuit_elements_dynamic(simulator->circuit, simulator->unit_time);
-    if (apply_analyze(simulator->analyzer) != 0)
-        return -1;
+    apply_analyze(simulator->analyzer);
     update_circuit_elements_static(simulator->circuit);
-    return apply_analyze(simulator->analyzer);
+    apply_analyze(simulator->analyzer);
 }
