@@ -28,9 +28,7 @@ int is_connected_in_direction(connection_t *parent, connection_t *child, int dir
 
 int get_connection_direction(connection_t *parent, connection_t *child, int parent_direction);
 
-int is_node_in_nodes(int node, int *nodes, int nodes_count);
-
-int get_connection_node(connection_t *connection, int direction);
+int find_nodes_by_indexes(int *nodes, int *indexes, int indexes_count, connection_t **connections);
 
 int calculate_maximum_nodes_count(int connections_count);
 

@@ -19,6 +19,6 @@ analyzer_t *create_analyzer(connection_t **connections, int connections_count);
 
 void delete_analyzer(analyzer_t *analyzer);
 
-void apply_analyze(analyzer_t *analyzer);
+int apply_analyze(analyzer_t *analyzer);
 
 #endif //CIRCUIT_SIMULATOR_ANALYZER_H

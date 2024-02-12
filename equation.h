@@ -7,10 +7,8 @@ double **create_equations(int count);
 
 void delete_equations(double **equations, int count);
 
-void copy_equations(double **destination, double **equations, int count);
-
 void erase_equation(double *target, int xn_count);
 
-void solve_equations(double **target, int count);
+int solve_equations(double **target, int count);
 
 #endif //CIRCUIT_SIMULATOR_EQUATION_H

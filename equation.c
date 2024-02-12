@@ -23,12 +23,6 @@ void delete_equations(double **equations, int count) {
     free(equations);
 }
 
-void copy_equation(double *destination, double *equation, int xn_count) {
-    for (int i = 0; i < (xn_count + 1); i++) {
-        destination[i] = equation[i];
-    }
-}
-
 void erase_equation(double *target, int xn_count) {
     for (int i = 0; i < xn_count + 1; i++)
         target[i] = 0.0;
@@ -60,12 +54,11 @@ void elimination_xn(double *target, double *source, int xn_count, int n) {
     target[n] = 0.0;
 }
 
-void elimination_equations(double **target, int count) {
+int elimination_equations(double **target, int count) {
     for (int i = 0; i < count; i++) {
         int index_found = find_equation_index_xn(i, target, count, i);
-        if (index_found == -1) {
-            target[i][i] = 1.0;
-            continue;
+        if (index_found < 0) {
+            return -1;
         }
         swap_equation(target, i, index_found);
         for (int j = 0; j < count; j++) {
@@ -73,22 +66,30 @@ void elimination_equations(double **target, int count) {
                 elimination_xn(target[j], target[i], count, i);
         }
     }
+    return 0;
 }
 
-void divide_equation_coefficient(double *target, int n, int xn_count) {
+int divide_equation_coefficient(double *target, int n, int xn_count) {
+    if (IS_ZERO(target[n]))
+        return -1;
     for (int i = 0; i < xn_count + 1; i++) {
         if (i != n)
             target[i] /= target[n];
     }
     target[n] = 1.0;
+    return 0;
 }
 
-void divide_equations_coefficient(double **equations, int count) {
-    for (int i = 0; i < count; i++)
-        divide_equation_coefficient(equations[i], i, count);
+int divide_equations_coefficient(double **equations, int count) {
+    for (int i = 0; i < count; i++) {
+        if (divide_equation_coefficient(equations[i], i, count) != 0)
+            return -1;
+    }
+    return 0;
 }
 
-void solve_equations(double **target, int count) {
-    elimination_equations(target, count);
-    divide_equations_coefficient(target, count);
+int solve_equations(double **target, int count) {
+    if (elimination_equations(target, count) != 0)
+        return -1;
+    return divide_equations_coefficient(target, count);
 }

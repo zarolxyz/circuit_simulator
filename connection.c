@@ -60,6 +60,23 @@ int get_connection_node(connection_t *connection, int direction) {
     return connection->node_positive;
 }
 
+int find_nodes_by_indexes(int *nodes, int *indexes, int indexes_count, connection_t **connections) {
+    int nodes_count = 0;
+    for (int i = 0; i < indexes_count; i++) {
+        int node_positive = get_connection_node(connections[indexes[i]], DIRECTION_POSITIVE);
+        int node_negative = get_connection_node(connections[indexes[i]], DIRECTION_NEGATIVE);
+        if (!is_node_in_nodes(node_positive, nodes, nodes_count)) {
+            nodes[nodes_count] = node_positive;
+            nodes_count++;
+        }
+        if (!is_node_in_nodes(node_negative, nodes, nodes_count)) {
+            nodes[nodes_count] = node_negative;
+            nodes_count++;
+        }
+    }
+    return nodes_count;
+}
+
 int calculate_maximum_nodes_count(int connections_count) {
     return connections_count * 2;
 }

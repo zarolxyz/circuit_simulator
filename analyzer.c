@@ -10,7 +10,7 @@ analyzer_t *create_analyzer(connection_t **connections, int connections_count) {
     analyzer->connections = connections;
     analyzer->connections_count = connections_count;
     analyzer->nodes = malloc(sizeof(int) * calculate_maximum_nodes_count(connections_count));
-    analyzer->nodes_count = search_connections_independent_node(analyzer->nodes, connections, connections_count);
+    analyzer->nodes_count = search_connections_independent_nodes(analyzer->nodes, connections, connections_count);
     analyzer->loops = malloc(sizeof(path_t *) * connections_count);
     analyzer->loops_count = search_connections_independent_loops(analyzer->loops, connections, connections_count);
     analyzer->equations_count = connections_count;
@@ -26,9 +26,11 @@ void delete_analyzer(analyzer_t *analyzer) {
     free(analyzer);
 }
 
-void generate_analyze_equations(double **destination, connection_t **connections, int connections_count, path_t **loops,
-                                int loops_count, int *nodes, int nodes_count) {
+int generate_analyze_equations(double **destination, connection_t **connections, int connections_count, path_t **loops,
+                               int loops_count, int *nodes, int nodes_count) {
     int equations_count = connections_count;
+    if (loops_count + nodes_count != equations_count)
+        return -1;
     int xn_count = equations_count;
     int generated_equations_count = 0;
     for (int i = 0; i < loops_count; i++) {
@@ -70,12 +72,16 @@ void generate_analyze_equations(double **destination, connection_t **connections
         }
         generated_equations_count++;
     }
+    return 0;
 }
 
-void apply_analyze(analyzer_t *analyzer) {
-    generate_analyze_equations(analyzer->equations, analyzer->connections, analyzer->connections_count, analyzer->loops,
-                               analyzer->loops_count, analyzer->nodes, analyzer->nodes_count);
-    solve_equations(analyzer->equations, analyzer->equations_count);
+int apply_analyze(analyzer_t *analyzer) {
+    if (generate_analyze_equations(analyzer->equations, analyzer->connections, analyzer->connections_count,
+                                   analyzer->loops,
+                                   analyzer->loops_count, analyzer->nodes, analyzer->nodes_count) != 0)
+        return -1;
+    if (solve_equations(analyzer->equations, analyzer->equations_count) != 0)
+        return -1;
     for (int i = 0; i < analyzer->connections_count; i++) {
         element_t *element = analyzer->connections[i]->element;
         if (element->type == VOLTAGE) {
@@ -89,4 +95,5 @@ void apply_analyze(analyzer_t *analyzer) {
             element->voltage = element->current * element->resistance;
         }
     }
+    return 0;
 }

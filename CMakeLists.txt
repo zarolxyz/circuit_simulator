@@ -18,4 +18,6 @@ add_executable(circuit_simulator main.c
         paths.h
         circuit.c
         circuit.h
+        simulator.c
+        simulator.h
 )

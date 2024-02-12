@@ -78,23 +78,6 @@ int search_connection_loops(path_t **loops, int start_index, connection_t **conn
                                                start_index, DIRECTION_POSITIVE, connections, connections_count);
 }
 
-int search_nodes_by_indexes(int *nodes, int *indexes, int indexes_count, connection_t **connections) {
-    int nodes_count = 0;
-    for (int i = 0; i < indexes_count; i++) {
-        int node_positive = get_connection_node(connections[indexes[i]], DIRECTION_POSITIVE);
-        int node_negative = get_connection_node(connections[indexes[i]], DIRECTION_NEGATIVE);
-        if (!is_node_in_nodes(node_positive, nodes, nodes_count)) {
-            nodes[nodes_count] = node_positive;
-            nodes_count++;
-        }
-        if (!is_node_in_nodes(node_negative, nodes, nodes_count)) {
-            nodes[nodes_count] = node_negative;
-            nodes_count++;
-        }
-    }
-    return nodes_count;
-}
-
 int search_connections_loops(path_t **loops, connection_t **connections, int connections_count) {
     int loops_count = 0;
     for (int i = 0; i < connections_count; i++) {
@@ -129,10 +112,10 @@ int delete_dependent_loops(path_t **loops, int loops_count, connection_t **conne
                                                            connected_count, loops,
                                                            loops_count);
             int related_nodes[calculate_maximum_nodes_count(connected_count)];
-            int related_nodes_count = search_nodes_by_indexes(related_nodes,
-                                                              &searched_connections_indexes[searched_connections_count],
-                                                              connected_count,
-                                                              connections);
+            int related_nodes_count = find_nodes_by_indexes(related_nodes,
+                                                            &searched_connections_indexes[searched_connections_count],
+                                                            connected_count,
+                                                            connections);
             int delete_count = related_loops_count - (connected_count - (related_nodes_count - 1));
             for (int j = 0; j < delete_count; j++) {
                 loops_count = delete_path_list_in_paths(related_loops_indexes[j], loops, loops_count);
@@ -149,7 +132,7 @@ int search_connections_independent_loops(path_t **loops, connection_t **connecti
     return loops_count;
 }
 
-int search_connections_independent_node(int *nodes, connection_t **connections, int connections_count) {
+int search_connections_independent_nodes(int *nodes, connection_t **connections, int connections_count) {
     int nodes_count = 0;
     int searched_connections_indexes[connections_count];
     int searched_connections_count = 0;
@@ -157,10 +140,10 @@ int search_connections_independent_node(int *nodes, connection_t **connections, 
         if (!is_index_in_indexes(i, searched_connections_indexes, searched_connections_count)) {
             int connected_count = search_connections_connected(
                     &searched_connections_indexes[searched_connections_count], i, connections, connections_count);
-            nodes_count += search_nodes_by_indexes(&nodes[nodes_count],
-                                                   &searched_connections_indexes[searched_connections_count],
-                                                   connected_count,
-                                                   connections);
+            nodes_count += find_nodes_by_indexes(&nodes[nodes_count],
+                                                 &searched_connections_indexes[searched_connections_count],
+                                                 connected_count,
+                                                 connections);
             nodes_count -= 1;
             searched_connections_count += connected_count;
         }
