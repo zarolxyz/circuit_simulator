@@ -90,5 +90,4 @@ void apply_analyze(analyzer_t *analyzer) {
             element->voltage = element->current * element->resistance;
         }
     }
-    return 0;
 }

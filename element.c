@@ -128,12 +128,16 @@ void update_dynamic_component_element(component_t *component, double time) {
 void update_static_component_element(component_t *component) {
     switch (component->type) {
         case DIODE:
-            if (component->element1->voltage >= component->value1) {
-                component->element1->type = VOLTAGE;
-                component->element1->voltage = component->value1;
+            if (component->element1->type == CURRENT) {
+                if (component->element1->voltage >= component->value1) {
+                    component->element1->type = VOLTAGE;
+                    component->element1->voltage = component->value1;
+                }
             } else {
-                component->element1->type = CURRENT;
-                component->element1->current = 0.0;
+                if (component->element1->current < 0) {
+                    component->element1->type = CURRENT;
+                    component->element1->current = 0.0;
+                }
             }
             break;
         case RELAY_OPEN:

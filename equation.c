@@ -62,13 +62,15 @@ void swap_equation(double **equations, int index1, int index2) {
 
 // 消元
 void elimination_xn(double *target, double *source, int xn_count, int n) {
-    double ratio = -target[n] / source[n];
-    for (int i = 0; i < xn_count + 1; i++) {
-        if (i != n) {
-            target[i] += ratio * source[i];
+    if (!IS_ZERO(target[n])) {
+        double ratio = -target[n] / source[n];
+        for (int i = 0; i < xn_count + 1; i++) {
+            if (i != n) {
+                target[i] += ratio * source[i];
+            }
         }
+        target[n] = 0.0;
     }
-    target[n] = 0.0;
 }
 
 void elimination_equations(double **target, int count) {
@@ -83,10 +85,10 @@ void elimination_equations(double **target, int count) {
             target[i][count] = NOT_NUMBER;
         } else {
             swap_equation(target, i, index_found);
-            for (int j = 0; j < count; j++) {
-                if (j != i)
-                    elimination_xn(target[j], target[i], count, i);
-            }
+        }
+        for (int j = 0; j < count; j++) {
+            if (j != i)
+                elimination_xn(target[j], target[i], count, i);
         }
     }
 }
