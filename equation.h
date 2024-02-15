@@ -2,7 +2,6 @@
 #define CIRCUIT_SIMULATOR_EQUATION_H
 
 #define IS_ZERO(x) ((x) >= -1e-15 && (x) <= 1e-15)
-#define NOT_NUMBER (0.0 / 0.0)
 
 double **create_equations(int count);
 

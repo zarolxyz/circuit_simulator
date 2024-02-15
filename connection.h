@@ -22,13 +22,13 @@ void delete_connection(connection_t *connection);
 
 int is_connected_to_node(connection_t *connection, int node);
 
-int is_connected_to_connection(connection_t *connection1, connection_t *connection2);
+int is_connected_to_nodes(connection_t *connection, int *nodes, int nodes_count);
 
 int is_connected_in_direction(connection_t *parent, connection_t *child, int direction);
 
 int get_connection_direction(connection_t *parent, connection_t *child, int parent_direction);
 
-int find_nodes_by_indexes(int *nodes, int *indexes, int indexes_count, connection_t **connections);
+int find_connections_nodes(int *nodes, connection_t **connections, int connections_count);
 
 int calculate_maximum_nodes_count(int connections_count);
 

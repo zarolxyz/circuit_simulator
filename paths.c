@@ -23,13 +23,6 @@ void delete_path_list(path_t *head) {
     }
 }
 
-int delete_path_list_in_paths(int index, path_t **paths, int paths_count) {
-    delete_path_list(paths[index]);
-    paths[index] = paths[paths_count - 1];
-    paths_count--;
-    return paths_count;
-}
-
 void delete_paths(path_t **paths, int count) {
     for (int i = 0; i < count; i++) {
         delete_path_list(paths[i]);
@@ -51,4 +44,28 @@ int is_index_in_paths(int index, path_t **paths, int count) {
             return 1;
     }
     return 0;
+}
+
+int count_path_node(path_t *head) {
+    int count = 0;
+    while (head != NULL) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+int find_paths_shortest_path_index(path_t **paths, int paths_count) {
+    if (paths_count < 1)
+        return -1;
+    int shortest_index = 0;
+    int shortest_length = count_path_node(paths[0]);
+    for (int i = 1; i < paths_count; i++) {
+        int length = count_path_node(paths[i]);
+        if (length < shortest_length) {
+            shortest_index = i;
+            shortest_length = count_path_node(paths[shortest_index]);
+        }
+    }
+    return shortest_index;
 }

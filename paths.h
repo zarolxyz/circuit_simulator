@@ -13,12 +13,12 @@ void delete_path_node(path_t *node);
 
 void delete_path_list(path_t *head);
 
-int delete_path_list_in_paths(int index, path_t **paths, int paths_count);
-
 void delete_paths(path_t **paths, int count);
 
 int is_index_in_path_list(int index, path_t *head);
 
 int is_index_in_paths(int index, path_t **paths, int count);
+
+int find_paths_shortest_path_index(path_t **paths, int paths_count);
 
 #endif //CIRCUIT_SIMULATOR_PATHS_H

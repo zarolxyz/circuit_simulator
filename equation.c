@@ -29,9 +29,9 @@ void erase_equation(double *target, int xn_count) {
 }
 
 // 找到一个指定未知量系数不为0的方程索引
-int find_equation_index_xn(int index_start, double **equations, int count, int n) {
+int find_equation_index_xn(int index_start, double **equations, int count, int xn) {
     for (int i = index_start; i < count; i++) {
-        if (!IS_ZERO(equations[i][n]))
+        if (!IS_ZERO(equations[i][xn]))
             return i;
     }
     return -1;
@@ -61,15 +61,15 @@ void swap_equation(double **equations, int index1, int index2) {
 }
 
 // 消元
-void elimination_xn(double *target, double *source, int xn_count, int n) {
-    if (!IS_ZERO(target[n])) {
-        double ratio = -target[n] / source[n];
+void elimination_xn(double *target, double *source, int xn_count, int xn) {
+    if (!IS_ZERO(target[xn])) {
+        double ratio = -target[xn] / source[xn];
         for (int i = 0; i < xn_count + 1; i++) {
-            if (i != n) {
+            if (i != xn) {
                 target[i] += ratio * source[i];
             }
         }
-        target[n] = 0.0;
+        target[xn] = 0.0;
     }
 }
 
@@ -80,9 +80,6 @@ void elimination_equations(double **target, int count) {
             index_found = find_invalid_equation_index(i, target, count);
             if (index_found >= 0)
                 swap_equation(target, i, index_found);
-            erase_equation(target[i], count);
-            target[i][i] = 1.0;
-            target[i][count] = NOT_NUMBER;
         } else {
             swap_equation(target, i, index_found);
         }
@@ -91,14 +88,18 @@ void elimination_equations(double **target, int count) {
                 elimination_xn(target[j], target[i], count, i);
         }
     }
+    for (int i = 0; i < count; i++) {
+        if (IS_ZERO(target[i][i]))
+            erase_equation(target[i], count);
+    }
 }
 
-void divide_equation_coefficient(double *target, int n, int xn_count) {
+void divide_equation_coefficient(double *target, int xn, int xn_count) {
     for (int i = 0; i < xn_count + 1; i++) {
-        if (i != n)
-            target[i] /= target[n];
+        if (i != xn)
+            target[i] /= target[xn];
     }
-    target[n] = 1.0;
+    target[xn] = 1.0;
 }
 
 void divide_equations_coefficient(double **equations, int count) {
