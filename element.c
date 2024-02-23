@@ -12,170 +12,73 @@ void delete_element(element_t *element) {
     free(element);
 }
 
-component_t *create_simple_component(component_type_t type, double value) {
-    component_t *component = malloc(sizeof(component_t));
-    component->type = type;
-    component->element1 = create_element();
-    component->value1 = value;
-    return component;
+void generate_element_state_string(char *state_string, element_t *element) {
+    sprintf(state_string, "voltage:%lf current:%lf", element->voltage, element->current);
 }
 
-component_t *create_complex_component(component_type_t type, double value1, double value2) {
-    component_t *component = malloc(sizeof(component_t));
-    component->type = type;
-    component->element1 = create_element();
-    component->value1 = value1;
-    component->element2 = create_element();
-    component->value2 = value2;
-    return component;
+void update_capacitor_element(double capacitance, double time, element_t *element) {
+    element->voltage += element->current / capacitance * time;
 }
 
-void delete_component(component_t *component) {
-    delete_element(component->element1);
-    if (is_complex_component_type(component->type))
-        delete_element(component->element2);
-    free(component);
+void update_inductor_element(double inductance, double time, element_t *element) {
+    element->current += element->voltage / inductance * time;
 }
 
-component_type_t get_component_type_from_character(char component_type) {
-    switch (component_type) {
-        case 'U':
-            return VOLTAGE_SOURCE;
-        case 'I':
-            return CURRENT_SOURCE;
-        case 'R':
-            return RESISTOR;
-        case 'C':
-            return CAPACITOR;
-        case 'L':
-            return INDUCTOR;
-        case 'D':
-            return DIODE;
-        case 'O':
-            return RELAY_OPEN;
-        case 'N':
-            return RELAY_CLOSED;
-        default:
-            break;
-    }
-    return COMPONENT_UNKNOWN;
+void set_element_voltage_source(double voltage, element_t *element) {
+    element->type = VOLTAGE;
+    element->voltage = voltage;
 }
 
-int is_complex_component_type(component_type_t type) {
-    switch (type) {
-        case RELAY_OPEN:
-        case RELAY_CLOSED:
-            return 1;
-        default:
-            break;
-    }
-    return 0;
+void set_element_current_source(double current, element_t *element) {
+    element->type = CURRENT;
+    element->current = current;
 }
 
-void init_component_element(component_t *component) {
-    switch (component->type) {
-        case VOLTAGE_SOURCE:
-            component->element1->type = VOLTAGE;
-            component->element1->voltage = component->value1;
-            break;
-        case CURRENT_SOURCE:
-            component->element1->type = CURRENT;
-            component->element1->current = component->value1;
-            break;
-        case RESISTOR:
-            component->element1->type = RESISTANCE;
-            component->element1->resistance = component->value1;
-            break;
-        case CAPACITOR:
-            component->element1->type = VOLTAGE;
-            component->element1->voltage = 0.0;
-            break;
-        case INDUCTOR:
-        case DIODE: // 假设二极管是未导通状态
-            component->element1->type = CURRENT;
-            component->element1->current = 0.0;
-            break;
-        case RELAY_OPEN:
-            component->element1->type = RESISTANCE;
-            component->element1->resistance = component->value1;
-            component->element2->type = CURRENT;
-            component->element2->current = 0.0;
-            break;
-        case RELAY_CLOSED:
-            component->element1->type = RESISTANCE;
-            component->element1->resistance = component->value1;
-            component->element2->type = VOLTAGE;
-            component->element2->current = 0.0;
-            break;
-        default:
-            break;
-    }
+void set_element_resistor(double resistance, element_t *element) {
+    element->type = RESISTANCE;
+    element->resistance = resistance;
 }
 
-void update_dynamic_component_element(component_t *component, double time) {
-    switch (component->type) {
-        case CAPACITOR:
-            component->element1->voltage += component->element1->current / component->value1 * time;
-            break;
-        case INDUCTOR:
-            component->element1->current += component->element1->voltage / component->value1 * time;
-            break;
-        default:
-            break;
-    }
+void set_element_open(element_t *element) {
+    set_element_current_source(0.0, element);
 }
 
-void update_static_component_element(component_t *component) {
-    switch (component->type) {
-        case DIODE:
-            if (component->element1->type == CURRENT) {
-                if (component->element1->voltage >= component->value1) {
-                    component->element1->type = VOLTAGE;
-                    component->element1->voltage = component->value1;
-                }
-            } else {
-                if (component->element1->current < 0) {
-                    component->element1->type = CURRENT;
-                    component->element1->current = 0.0;
-                }
-            }
-            break;
-        case RELAY_OPEN:
-            if (component->element1->voltage >= component->value2 ||
-                component->element1->voltage <= -component->value2) {
-                component->element2->type = VOLTAGE;
-                component->element2->voltage = 0.0;
-            } else {
-                component->element2->type = CURRENT;
-                component->element2->current = 0.0;
-            }
-            break;
-        case RELAY_CLOSED:
-            if (component->element1->voltage >= component->value2 ||
-                component->element1->voltage <= -component->value2) {
-                component->element2->type = CURRENT;
-                component->element2->current = 0.0;
-            } else {
-                component->element2->type = VOLTAGE;
-                component->element2->voltage = 0.0;
-            }
-        default:
-            break;
-    }
+void set_element_short(element_t *element) {
+    set_element_voltage_source(0.0, element);
 }
 
-void generate_simple_component_state_string(char *state_string, component_t *component) {
-    sprintf(state_string, "voltage:%lf current:%lf", component->element1->voltage, component->element1->current);
+void init_element_capacitor(element_t *element) {
+    set_element_short(element);
 }
 
-void generate_complex_component_state_string(char *state_string, component_t *component) {
-    sprintf(state_string, "voltage1:%lf current1:%lf voltage2:%lf current2:%lf", component->element1->voltage,
-            component->element1->current, component->element2->voltage, component->element2->current);
+void init_element_inductor(element_t *element) {
+    set_element_open(element);
 }
 
-void generate_component_state_string(char *state_string, component_t *component) {
-    if (is_complex_component_type(component->type))
-        generate_complex_component_state_string(state_string, component);
-    else
-        generate_simple_component_state_string(state_string, component);
+void init_element_diode(element_t *element) {
+    set_element_open(element);
+}
+
+void init_element_transistor(element_t *element_bc, element_t *element_be) {
+    init_element_diode(element_bc);
+    init_element_diode(element_be);
+}
+
+void set_diode_element_conduction(double voltage, element_t *element) {
+    set_element_voltage_source(voltage, element);
+}
+
+void set_diode_element_close(element_t *element) {
+    set_element_open(element);
+}
+
+int is_diode_element_close(element_t *element) {
+    return element->type == CURRENT;
+}
+
+void update_diode_element(double voltage, element_t *element) {
+    if (is_diode_element_close(element) && !(element->voltage < voltage))
+        set_diode_element_conduction(voltage, element);
+    else if (!(element->current >= 0))
+        set_diode_element_close(element);
 }

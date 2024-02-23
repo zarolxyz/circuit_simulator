@@ -1,11 +1,9 @@
 #include "stdlib.h"
 #include "connection.h"
 
-connection_t *create_connection(element_t *element, int node_positive, int node_negative) {
+connection_t *create_connection(element_t *element) {
     connection_t *connection = malloc(sizeof(connection_t));
     connection->element = element;
-    connection->node_positive = node_positive;
-    connection->node_negative = node_negative;
     return connection;
 }
 
@@ -13,76 +11,85 @@ void delete_connection(connection_t *connection) {
     free(connection);
 }
 
-int is_connected_to_node(connection_t *connection, int node) {
-    if (connection->node_positive == node || connection->node_negative == node)
+int is_connection_index_in_indexes(int connection_index, int *connection_indexes, int connections_count) {
+    for (int i = 0; i < connections_count; i++) {
+        if (connection_index == connection_indexes[i])
+            return 1;
+    }
+    return 0;
+}
+
+int is_node_id_in_connection(connection_t *connection, int node_id) {
+    if (connection->node_id_positive == node_id || connection->node_id_negative == node_id)
         return 1;
     return 0;
 }
 
-int is_connected_to_nodes(connection_t *connection, int *nodes, int nodes_count) {
-    for (int i = 0; i < nodes_count; i++) {
-        if (is_connected_to_node(connection, nodes[i]))
-            return 1;
-    }
-    return 0;
-}
-
-int is_connected_in_direction(connection_t *parent, connection_t *child, int direction) {
+int is_connected_in_direction(connection_t *parent, connection_t *child, direction_t direction) {
     if (direction == DIRECTION_NEGATIVE)
-        return is_connected_to_node(child, parent->node_negative);
-    return is_connected_to_node(child, parent->node_positive);
+        return is_node_id_in_connection(child, parent->node_id_negative);
+    return is_node_id_in_connection(child, parent->node_id_positive);
 }
 
 // 获取parent连接器进入child连接器再出去的方向
-int get_connection_direction(connection_t *parent, connection_t *child, int parent_direction) {
-    if (child->node_positive == child->node_negative)
-        return DIRECTION_POSITIVE_NEGATIVE;
+direction_t get_connection_direction(connection_t *parent, connection_t *child, direction_t parent_direction) {
+    if (child->node_id_positive == child->node_id_negative) {
+        if (child->node_id_positive != parent_direction)
+            return DIRECTION_POSITIVE_NEGATIVE;
+        else
+            return parent_direction;
+    }
     if (parent_direction == DIRECTION_POSITIVE) {
-        if (child->node_positive == parent->node_positive)
+        if (child->node_id_positive == parent->node_id_positive)
             return DIRECTION_NEGATIVE;
         return DIRECTION_POSITIVE;
     }
-    if (child->node_positive == parent->node_negative)
+    if (child->node_id_positive == parent->node_id_negative)
         return DIRECTION_NEGATIVE;
-    return DIRECTION_POSITIVE; // 默认正方向
+    return DIRECTION_POSITIVE;
 }
 
-int is_node_in_nodes(int node, int *nodes, int nodes_count) {
-    for (int i = 0; i < nodes_count; i++) {
-        if (nodes[i] == node)
+int is_node_id_in_node_ids(int node_id, int *node_ids, int node_ids_count) {
+    for (int i = 0; i < node_ids_count; i++) {
+        if (node_ids[i] == node_id)
             return 1;
     }
     return 0;
 }
 
-int get_connection_node(connection_t *connection, int direction) {
+int get_connection_node_id(connection_t *connection, int direction) {
     if (direction == DIRECTION_NEGATIVE)
-        return connection->node_negative;
-    return connection->node_positive;
+        return connection->node_id_negative;
+    return connection->node_id_positive;
 }
 
-int find_connections_nodes(int *nodes, connection_t **connections, int connections_count) {
-    int nodes_count = 0;
+int find_connections_node_ids(int *node_ids, connection_t **connections, int connections_count) {
+    int node_ids_count = 0;
     for (int i = 0; i < connections_count; i++) {
-        int node_positive = get_connection_node(connections[i], DIRECTION_POSITIVE);
-        int node_negative = get_connection_node(connections[i], DIRECTION_NEGATIVE);
-        if (!is_node_in_nodes(node_positive, nodes, nodes_count)) {
-            nodes[nodes_count] = node_positive;
-            nodes_count++;
+        int node_id_positive = get_connection_node_id(connections[i], DIRECTION_POSITIVE);
+        int node_id_negative = get_connection_node_id(connections[i], DIRECTION_NEGATIVE);
+        if (!is_node_id_in_node_ids(node_id_positive, node_ids, node_ids_count)) {
+            node_ids[node_ids_count] = node_id_positive;
+            node_ids_count++;
         }
-        if (!is_node_in_nodes(node_negative, nodes, nodes_count)) {
-            nodes[nodes_count] = node_negative;
-            nodes_count++;
+        if (!is_node_id_in_node_ids(node_id_negative, node_ids, node_ids_count)) {
+            node_ids[node_ids_count] = node_id_negative;
+            node_ids_count++;
         }
     }
-    return nodes_count;
+    return node_ids_count;
 }
 
-int calculate_maximum_nodes_count(int connections_count) {
-    return connections_count * 2;
+int count_connections_with_node_id(int node_id, connection_t **connections, int connections_count) {
+    int connected_count = 0;
+    for (int i = 0; i < connections_count; i++) {
+        if (is_node_id_in_connection(connections[i], node_id))
+            connected_count++;
+    }
+    return connected_count;
 }
 
-double get_calculation_direction(int direction) {
+double get_calculation_direction(direction_t direction) {
     if (direction == DIRECTION_NEGATIVE)
         return -1.0;
     if (direction == DIRECTION_POSITIVE)
@@ -90,12 +97,12 @@ double get_calculation_direction(int direction) {
     return 0.0;
 }
 
-int get_direction_node_to_connection(int node, connection_t *connection) {
-    if (connection->node_positive == connection->node_negative)
+int get_direction_node_id_to_connection(int node_id, connection_t *connection) {
+    if (connection->node_id_positive == connection->node_id_negative)
         return DIRECTION_POSITIVE_NEGATIVE;
-    if (connection->node_negative == node)
+    if (connection->node_id_negative == node_id)
         return DIRECTION_POSITIVE;
-    if (connection->node_positive == node)
+    if (connection->node_id_positive == node_id)
         return DIRECTION_NEGATIVE;
     return DIRECTION_POSITIVE_NEGATIVE;
 }

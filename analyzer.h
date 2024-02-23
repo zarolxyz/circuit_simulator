@@ -2,14 +2,15 @@
 #define CIRCUIT_SIMULATOR_ANALYZER_H
 
 #include "connection.h"
-#include "paths.h"
+#include "path.h"
+#include "node.h"
 
 typedef struct {
     connection_t **connections;
     int connections_count;
     path_t **loops;
     int loops_count;
-    int *nodes;
+    node_t **nodes;
     int nodes_count;
     double **equations;
     int equations_count;

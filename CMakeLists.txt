@@ -8,16 +8,16 @@ add_executable(circuit_simulator main.c
         element.h
         connection.h
         connection.c
-        searcher.c
-        searcher.h
+        path.c
+        path.h
         equation.c
         equation.h
         analyzer.c
         analyzer.h
-        paths.c
-        paths.h
-        circuit.c
-        circuit.h
         simulator.c
         simulator.h
+        component.c
+        component.h
+        node.c
+        node.h
 )

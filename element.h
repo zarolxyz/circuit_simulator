@@ -12,34 +12,30 @@ typedef struct {
     double resistance;
 } element_t;
 
-typedef enum {
-    COMPONENT_UNKNOWN, VOLTAGE_SOURCE, CURRENT_SOURCE, RESISTOR, CAPACITOR, INDUCTOR, DIODE, RELAY_OPEN, RELAY_CLOSED
-} component_type_t;
+element_t *create_element();
 
-typedef struct {
-    component_type_t type;
-    element_t *element1;
-    double value1;
-    element_t *element2;
-    double value2;
-} component_t;
+void delete_element(element_t *element);
 
-component_t *create_simple_component(component_type_t type, double value);
+void generate_element_state_string(char *state_string, element_t *element);
 
-component_t *create_complex_component(component_type_t type, double value1, double value2);
+void update_capacitor_element(double capacitance, double time, element_t *element);
 
-void delete_component(component_t *component);
+void update_inductor_element(double inductance, double time, element_t *element);
 
-component_type_t get_component_type_from_character(char component_type);
+void set_element_voltage_source(double voltage, element_t *element);
 
-int is_complex_component_type(component_type_t type);
+void set_element_current_source(double current, element_t *element);
 
-void init_component_element(component_t *component);
+void set_element_resistor(double resistance, element_t *element);
 
-void update_dynamic_component_element(component_t *component, double time);
+void init_element_capacitor(element_t *element);
 
-void update_static_component_element(component_t *component);
+void init_element_inductor(element_t *element);
 
-void generate_component_state_string(char *state_string, component_t *component);
+void init_element_diode(element_t *element);
+
+void init_element_transistor(element_t *element_bc, element_t *element_be);
+
+void update_diode_element(double voltage, element_t *element);
 
 #endif //CIRCUIT_SIMULATOR_ELEMENT_H
